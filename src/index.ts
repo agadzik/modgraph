@@ -24,6 +24,7 @@ export async function generateDependencyGraph(options: GenerateOptions): Promise
   for await (const importResult of searchImports(directory, excludePatterns)) {
     const resolvedImport = resolver.resolveImport(importResult.importPath, importResult.filePath);
     
+    
     if (!resolvedImport) {
       continue;
     }

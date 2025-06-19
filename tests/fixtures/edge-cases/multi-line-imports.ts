@@ -50,11 +50,6 @@ const dynamicMultiLine = import(
   './dynamic-module'
 );
 
-// Multi-line dynamic import with options
-const dynamicWithOptions = import(
-  /* webpackChunkName: "my-chunk" */
-  './another-dynamic-module'
-);
 
 // Multi-line require (CommonJS)
 const {

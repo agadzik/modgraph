@@ -84,27 +84,23 @@ describe('Edge Cases', () => {
     
     const dependencies = graph.modules[entryKey].dependencies;
     
-    // Single-line imports should be found
+    // Should find all multi-line imports
+    expect(dependencies).toContain('app/(flags)/server.ts');
+    expect(dependencies).toContain('utils/validators.ts');
+    expect(dependencies).toContain('utils/logging.ts');
+    expect(dependencies).toContain('auth/utils.ts');
+    expect(dependencies).toContain('dynamic-module.ts');
     expect(dependencies).toContain('components.ts');
+    expect(dependencies).toContain('mixed-exports.ts');
     
-    // TODO: Multi-line imports are not currently supported by the regex-based parser
-    // The following imports are written across multiple lines and won't be detected:
-    // - app/(flags)/server.ts
-    // - utils/validators.ts  
-    // - utils/logging.ts
-    // - auth/utils.ts
-    // - dynamic-module.ts
-    // - another-dynamic-module.ts
-    // - mixed-exports.ts
-    // - fs/promises (multi-line require)
+    // Should NOT find type-only imports
+    expect(dependencies).not.toContain('types.ts');
     
-    // To properly support multi-line imports, we would need to either:
-    // 1. Use a proper JavaScript/TypeScript parser (e.g., @babel/parser, typescript)
-    // 2. Implement a more sophisticated regex that can match across lines
-    // 3. Pre-process files to normalize multi-line imports to single lines
+    // Should handle CommonJS require (external dependency, so not included)
+    expect(dependencies).not.toContain('fs/promises');
     
-    // For now, we recommend formatting imports on a single line for best compatibility
-    expect(dependencies.length).toBe(1); // Only single-line import is found
+    // Should handle React (external dependency, so not included)
+    expect(dependencies).not.toContain('react');
   });
 
   it('should handle import patterns with complex syntax', async () => {

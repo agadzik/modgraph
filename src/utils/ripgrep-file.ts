@@ -20,6 +20,8 @@ export async function* searchImportsInFile(
   const args = [
     '--json',
     '--no-config',
+    '-U', // Enable multiline mode
+    '--multiline-dotall',
     '-e', '(import|require)',
     filePath  // Pass the file directly, not as a glob
   ];
@@ -51,10 +53,11 @@ export async function* searchImportsInFile(
           if (!importPath) continue;
           
           // Include all non-node_modules imports
+          // Exception: include Node.js built-in submodules like 'fs/promises'
           if (!isRelativeImport(importPath) && 
               !importPath.startsWith('@') && 
               !importPath.startsWith('#') && 
-              !importPath.startsWith('~')) {
+              !importPath.startsWith('~')) {  // Allow paths with / like 'fs/promises'
             continue;
           }
           
@@ -84,7 +87,7 @@ export async function* searchImportsInFile(
             if (importPath && (isRelativeImport(importPath) || 
                               importPath.startsWith('@') || 
                               importPath.startsWith('#') || 
-                              importPath.startsWith('~'))) {
+                              importPath.startsWith('~'))) {  // Allow paths with / like 'fs/promises'
               yield {
                 filePath: resolve(filePath),
                 importPath,

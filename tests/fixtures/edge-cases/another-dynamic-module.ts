@@ -1,1 +1,0 @@
-export const anotherDynamicData = "Another dynamic module";

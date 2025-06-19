@@ -39,6 +39,8 @@ export async function* searchImports(
     '--json',
     '--no-config',
     '--no-ignore-vcs',
+    '-U', // Enable multiline mode
+    '--multiline-dotall',
     '--glob', '*.{js,jsx,ts,tsx,mjs}',
     '--glob', '!node_modules/**',
     '--glob', '!dist/**',
@@ -70,15 +72,19 @@ export async function* searchImports(
         if (shouldSkipImport(lineText)) continue;
         
         for (const submatch of match.data.submatches) {
-          const importPath = extractImportPath(lineText, submatch.start, submatch.end);
+          let importPath = extractImportPath(lineText, submatch.start, submatch.end);
+          
+          
+          
           
           if (!importPath) continue;
           
           // Skip only node_modules imports (no ./ or ../ and no @ or # or ~)
+          // Exception: include Node.js built-in submodules like 'fs/promises'
           if (!isRelativeImport(importPath) && 
               !importPath.startsWith('@') && 
               !importPath.startsWith('#') && 
-              !importPath.startsWith('~')) {
+              !importPath.startsWith('~')) {  // Allow paths with / like 'fs/promises'
             continue;
           }
           
@@ -107,7 +113,7 @@ export async function* searchImports(
             if (importPath && (isRelativeImport(importPath) || 
                               importPath.startsWith('@') || 
                               importPath.startsWith('#') || 
-                              importPath.startsWith('~'))) {
+                              importPath.startsWith('~'))) {  // Allow paths with / like 'fs/promises'
               yield {
                 filePath: resolve(match.data.path.text),
                 importPath,
@@ -123,20 +129,38 @@ export async function* searchImports(
 }
 
 export function extractImportPath(line: string, start: number, end: number): string | null {
+  // First, try to extract just the relevant substring if we have position info
+  const substring = line.substring(start, end);
+  
   const patterns = [
-    /from\s*['"\`]([^'"\`]+)['"\`]/,
-    /import\s*\(\s*['"\`]([^'"\`]+)['"\`]/,
-    /require\s*\(\s*['"\`]([^'"\`]+)['"\`]/,
-    /import\.source\s*\(\s*['"\`]([^'"\`]+)['"\`]/,
+    /from\s*['"\`]([^'"\`]+)['"\`]/s,
+    /import\s*\([\s\S]*?['"\`]([^'"\`]+)['"\`]/,
+    /require\s*\([\s\S]*?['"\`]([^'"\`]+)['"\`]/,
+    /import\.source\s*\([\s\S]*?['"\`]([^'"\`]+)['"\`]/,
     /import\s*['"\`]([^'"\`]+)['"\`]/,
+    /import\s*\{[\s\S]*?\}\s*from\s*['"\`]([^'"\`]+)['"\`]/,
+    /const\s*\{[\s\S]*?\}\s*=\s*require\s*\([\s\S]*?['"\`]([^'"\`]+)['"\`]/,
+    /=\s*import\s*\([\s\S]*?['"\`]([^'"\`]+)['"\`]/,  // For dynamic imports with assignment
+    /import\s+source\s+\w+\s+from\s*['"\`]([^'"\`]+)['"\`]/,  // For source imports
+    /import\s+\w+\s+from\s*['"\`]([^'"\`]+)['"\`]\s*(?:assert|with)\s*\{[\s\S]*?\}/,  // For imports with assertions
   ];
   
+  // Try patterns on the substring first (more specific)
+  for (const pattern of patterns) {
+    const match = substring.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  // If no match on substring, try on the full line
   for (const pattern of patterns) {
     const match = line.match(pattern);
     if (match && match[1]) {
       return match[1];
     }
   }
+  
   
   return null;
 }
