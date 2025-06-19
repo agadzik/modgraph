@@ -1,0 +1,55 @@
+{
+  "name": "modgraph",
+  "version": "0.1.0",
+  "description": "A TypeScript CLI tool that generates module dependency graphs from JS/TS codebases",
+  "main": "dist/index.js",
+  "bin": {
+    "modgraph": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "module",
+    "dependency",
+    "graph",
+    "typescript",
+    "javascript",
+    "cli",
+    "analysis"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/modgraph.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/modgraph/issues"
+  },
+  "homepage": "https://github.com/yourusername/modgraph#readme",
+  "dependencies": {
+    "@vscode/ripgrep": "^1.15.13",
+    "commander": "^14.0.0",
+    "ms": "^2.1.3",
+    "tsconfig-resolver": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/ms": "^2.1.0",
+    "@types/node": "^24.0.3",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

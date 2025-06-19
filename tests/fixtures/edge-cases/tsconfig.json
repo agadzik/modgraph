@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["*"],
+      "@/auth/*": ["auth/*"],
+      "@utils/*": ["utils/*"],
+      "~/*": ["*"],
+      "~/utils/*": ["utils/*"],
+      "#/app/*": ["app/*"]
+    },
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  }
+}

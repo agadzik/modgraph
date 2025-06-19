@@ -1,0 +1,12 @@
+src/
+tests/
+.gitignore
+tsconfig.json
+vitest.config.ts
+dev_roadmap.md
+*.log
+.DS_Store
+node_modules/
+coverage/
+.idea/
+.vscode/
