@@ -41,6 +41,7 @@
   },
   "homepage": "https://github.com/yourusername/modgraph#readme",
   "dependencies": {
+    "@changesets/cli": "^2.29.4",
     "@vscode/ripgrep": "^1.15.13",
     "commander": "^14.0.0",
     "ms": "^2.1.3",
