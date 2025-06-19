@@ -11,7 +11,7 @@
     "dev": "tsx src/cli.ts",
     "test": "vitest",
     "test:run": "vitest run",
-    "prepublishOnly": "npm run build",
+    "prerelease": "npm run build",
     "release": "changeset version && changeset publish"
   },
   "keywords": [
@@ -38,6 +38,9 @@
   },
   "bugs": {
     "url": "https://github.com/yourusername/modgraph/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "homepage": "https://github.com/yourusername/modgraph#readme",
   "dependencies": {
