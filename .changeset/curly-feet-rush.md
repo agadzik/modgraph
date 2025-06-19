@@ -1,5 +1,0 @@
----
-"modgraph": major
----
-
-Initial release

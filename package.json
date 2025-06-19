@@ -1,6 +1,6 @@
 {
   "name": "modgraph",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A TypeScript CLI tool that generates module dependency graphs from JS/TS codebases",
   "main": "dist/index.js",
   "bin": {
