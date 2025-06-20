@@ -15,6 +15,7 @@ export interface DependencyGraph {
 }
 
 export interface CliOptions {
+  cwd?: string;
   output?: string;
   config?: string;
   exclude?: string[];
