@@ -1,5 +1,11 @@
 # modgraph
 
+## 1.0.1
+
+### Patch Changes
+
+- 8f983ec: Adds a --cwd option to specify the working directory
+
 ## 1.0.0
 
 ### Major Changes
