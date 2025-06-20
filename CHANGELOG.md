@@ -1,5 +1,11 @@
 # modgraph
 
+## 1.3.0
+
+### Minor Changes
+
+- 020ab49: Adds the `get_entry_points` mcp server tool
+
 ## 1.2.1
 
 ### Patch Changes
