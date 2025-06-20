@@ -1,5 +1,11 @@
 # modgraph
 
+## 1.2.1
+
+### Patch Changes
+
+- 1948a9c: Updates the `directories` description to nudge LLMs to use absolute paths
+
 ## 1.2.0
 
 ### Minor Changes
