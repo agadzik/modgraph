@@ -1,5 +1,11 @@
 # modgraph
 
+## 1.1.0
+
+### Minor Changes
+
+- 496d387: Adds MCP server support
+
 ## 1.0.1
 
 ### Patch Changes
