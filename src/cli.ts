@@ -10,15 +10,16 @@ import { CliOptions } from './types';
 program
   .name('modgraph')
   .description('Generate module dependency graphs from JS/TS codebases')
-  .version('0.1.0')
+  .version('1.0.0')
   .argument('[files...]', 'Entry point files to analyze (analyzes all files if not specified)')
+  .option('-w, --cwd <path>', 'Working directory (defaults to current working directory)')
   .option('-o, --output <file>', 'Output file path (defaults to stdout)')
   .option('-c, --config <path>', 'Path to tsconfig.json (searches for tsconfig.json in project root if not specified)')
   .option('-e, --exclude <patterns...>', 'Glob patterns to exclude')
   .option('-d, --debug', 'Show debug information including generation time')
   .action(async (files: string[], options: CliOptions) => {
     try {
-      const cwd = process.cwd();
+      const cwd = options.cwd ? resolve(process.cwd(), options.cwd) : process.cwd();
       const entryPoints = files.map(f => resolve(cwd, f));
       
       const startTime = Date.now();
