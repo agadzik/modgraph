@@ -20,7 +20,7 @@ export async function startMcpServer() {
       inputSchema: {
         directory: z
           .string()
-          .describe("The directory to analyze for dependencies"),
+          .describe("The directory to analyze for dependencies (absolute path)"),
         entryPoints: z
           .array(z.string())
           .optional()
