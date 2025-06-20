@@ -13,6 +13,35 @@ export interface GenerateOptions {
   debug?: boolean;
 }
 
+export function getEntryPointsForFiles(filePaths: string[], graph: DependencyGraph): string[] {
+  const entryPoints = new Set<string>();
+  
+  for (const filePath of filePaths) {
+    const visited = new Set<string>();
+    
+    const findEntryPoints = (currentFile: string) => {
+      if (visited.has(currentFile)) return;
+      visited.add(currentFile);
+      
+      const module = graph.modules[currentFile];
+      if (!module) return;
+      
+      if (module.dependents.length === 0) {
+        entryPoints.add(currentFile);
+        return;
+      }
+      
+      for (const dependent of module.dependents) {
+        findEntryPoints(dependent);
+      }
+    };
+    
+    findEntryPoints(filePath);
+  }
+  
+  return Array.from(entryPoints).sort();
+}
+
 export async function generateDependencyGraph(options: GenerateOptions): Promise<DependencyGraph> {
   const { directory, entryPoints, tsConfigPath, excludePatterns = [], debug } = options;
   

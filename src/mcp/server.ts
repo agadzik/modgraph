@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { generateDependencyGraph } from "../index.js";
+import { generateDependencyGraph, getEntryPointsForFiles } from "../index.js";
 import { resolve } from "path";
 
 export async function startMcpServer() {
@@ -109,6 +109,100 @@ export async function startMcpServer() {
           rootNodes: graph.rootNodes,
           modules: graph.modules,
           metadata: graph.metadata,
+        },
+      };
+    }
+  );
+
+  // Register the get_entry_points tool
+  server.registerTool(
+    "get_entry_points",
+    {
+      title: "Get Entry Points",
+      description:
+        "Find entry points that include the specified files in their module dependency trees",
+      inputSchema: {
+        directory: z
+          .string()
+          .describe("The directory to analyze for dependencies (absolute path)"),
+        filePaths: z
+          .array(z.string())
+          .describe("List of file paths to find entry points for"),
+        tsConfigPath: z
+          .string()
+          .optional()
+          .describe("Path to tsconfig.json for TypeScript path aliases"),
+        excludePatterns: z
+          .array(z.string())
+          .optional()
+          .describe("Glob patterns for files/directories to exclude"),
+      },
+      outputSchema: {
+        entryPoints: z
+          .array(z.string())
+          .describe("Entry points that include the specified files in their dependency trees"),
+        metadata: z
+          .object({
+            analyzedFiles: z
+              .array(z.string())
+              .describe("Files that were analyzed"),
+            totalEntryPoints: z
+              .number()
+              .describe("Total number of entry points found"),
+          })
+          .describe("Additional information about the analysis"),
+      },
+    },
+    async ({
+      directory,
+      filePaths,
+      tsConfigPath,
+      excludePatterns,
+    }) => {
+      // Resolve paths relative to the provided directory
+      const resolvedDirectory = resolve(directory);
+      const resolvedTsConfigPath = tsConfigPath
+        ? resolve(resolvedDirectory, tsConfigPath)
+        : undefined;
+
+      // Generate the complete dependency graph first
+      const graph = await generateDependencyGraph({
+        directory: resolvedDirectory,
+        tsConfigPath: resolvedTsConfigPath,
+        excludePatterns: excludePatterns || [],
+        debug: false,
+      });
+
+      // Convert file paths to relative paths for consistency with the graph
+      const relativeFilePaths = filePaths.map(fp => {
+        if (fp.startsWith(resolvedDirectory)) {
+          return fp.substring(resolvedDirectory.length + 1).replace(/\\/g, '/');
+        }
+        return fp.replace(/\\/g, '/');
+      });
+
+      // Find entry points for the specified files
+      const entryPoints = getEntryPointsForFiles(relativeFilePaths, graph);
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              entryPoints,
+              metadata: {
+                analyzedFiles: relativeFilePaths,
+                totalEntryPoints: entryPoints.length,
+              }
+            }, null, 2),
+          },
+        ],
+        structuredContent: {
+          entryPoints,
+          metadata: {
+            analyzedFiles: relativeFilePaths,
+            totalEntryPoints: entryPoints.length,
+          },
         },
       };
     }
