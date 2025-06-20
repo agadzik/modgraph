@@ -45,10 +45,12 @@
   "homepage": "https://github.com/yourusername/modgraph#readme",
   "dependencies": {
     "@changesets/cli": "^2.29.4",
+    "@modelcontextprotocol/sdk": "^1.13.0",
     "@vscode/ripgrep": "^1.15.13",
     "commander": "^14.0.0",
     "ms": "^2.1.3",
-    "tsconfig-resolver": "^3.0.1"
+    "tsconfig-resolver": "^3.0.1",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
     "@types/ms": "^2.1.0",
