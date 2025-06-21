@@ -1,5 +1,11 @@
 # modgraph
 
+## 1.4.0
+
+### Minor Changes
+
+- 352a9c0: Adds support for barrel files
+
 ## 1.3.0
 
 ### Minor Changes
