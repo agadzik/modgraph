@@ -143,6 +143,8 @@ export function extractImportPath(line: string, start: number, end: number): str
     /=\s*import\s*\([\s\S]*?['"\`]([^'"\`]+)['"\`]/,  // For dynamic imports with assignment
     /import\s+source\s+\w+\s+from\s*['"\`]([^'"\`]+)['"\`]/,  // For source imports
     /import\s+\w+\s+from\s*['"\`]([^'"\`]+)['"\`]\s*(?:assert|with)\s*\{[\s\S]*?\}/,  // For imports with assertions
+    /export\s*\*\s*from\s*['"\`]([^'"\`]+)['"\`]/,  // For export * from
+    /export\s*\{[\s\S]*?\}\s*from\s*['"\`]([^'"\`]+)['"\`]/,  // For export { ... } from
   ];
   
   // Try patterns on the substring first (more specific)
