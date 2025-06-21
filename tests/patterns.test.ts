@@ -39,9 +39,9 @@ describe('Pattern Utils', () => {
       expect(shouldSkipImport('import type { Foo } from "./foo"')).toBe(true);
     });
     
-    it('should skip re-exports', () => {
-      expect(shouldSkipImport('export * from "./foo"')).toBe(true);
-      expect(shouldSkipImport('export { bar } from "./foo"')).toBe(true);
+    it('should not skip re-exports (they create dependencies)', () => {
+      expect(shouldSkipImport('export * from "./foo"')).toBe(false);
+      expect(shouldSkipImport('export { bar } from "./foo"')).toBe(false);
     });
     
     it('should skip dynamic imports with variables', () => {

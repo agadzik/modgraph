@@ -23,9 +23,14 @@ export const IMPORT_PATTERNS = {
   sourcePhase: String.raw`import\s+source\s+\w+\s+from\s*['"\`]([^'"\`]+)['"\`]`,
   
   dynamicSource: String.raw`import\.source\s*\([\s\S]*?['"\`]([^'"\`]+)['"\`][\s\S]*?\)`,
+
+  // Re-export patterns
+  exportAll: String.raw`export\s*\*\s*from\s*['"\`]([^'"\`]+)['"\`]`,
+  
+  exportNamed: String.raw`export\s*\{[\s\S]*?\}\s*from\s*['"\`]([^'"\`]+)['"\`]`,
 };
 
-// Pattern that matches import/require statements including multi-line
+// Pattern that matches import/require/export statements including multi-line
 // Broken down into specific patterns unioned together:
 // 1. Named imports: import { ... } from '...'
 // 2. Mixed imports: import default, { ... } from '...'
@@ -36,14 +41,11 @@ export const IMPORT_PATTERNS = {
 // 7. Source imports: import source ... from '...'
 // 8. Dynamic source: import.source(...)
 // 9. Imports with assertions/attributes: import ... from '...' assert/with { ... }
-export const COMBINED_PATTERN = '(^import\\s+\\{[\\s\\S]*?\\}\\s*from[\\s\\S]*?[\'"`][^\'"`]+[\'"`](?:\\s*(?:assert|with)\\s*\\{[\\s\\S]*?\\})?)|(^import\\s+\\w+\\s*,\\s*\\{[\\s\\S]*?\\}\\s*from[\\s\\S]*?[\'"`][^\'"`]+[\'"`](?:\\s*(?:assert|with)\\s*\\{[\\s\\S]*?\\})?)|(^import\\s+\\w+\\s+from[\\s\\S]*?[\'"`][^\'"`]+[\'"`](?:\\s*(?:assert|with)\\s*\\{[\\s\\S]*?\\})?)|(^import\\s+[\'"`][^\'"`]+[\'"`])|(import\\s*\\([\\s\\S]*?[\'"`][^\'"`]+[\'"`][\\s\\S]*?\\))|(require\\s*\\([\\s\\S]*?[\'"`][^\'"`]+[\'"`][\\s\\S]*?\\))|(^import\\s+source\\s+\\w+\\s+from[\\s\\S]*?[\'"`][^\'"`]+[\'"`])|(import\\.source\\s*\\([\\s\\S]*?[\'"`][^\'"`]+[\'"`][\\s\\S]*?\\))';
+// 10. Re-export all: export * from '...'
+// 11. Re-export named: export { ... } from '...'
+export const COMBINED_PATTERN = '(^import\\s+\\{[\\s\\S]*?\\}\\s*from[\\s\\S]*?[\'"`][^\'"`]+[\'"`](?:\\s*(?:assert|with)\\s*\\{[\\s\\S]*?\\})?)|(^import\\s+\\w+\\s*,\\s*\\{[\\s\\S]*?\\}\\s*from[\\s\\S]*?[\'"`][^\'"`]+[\'"`](?:\\s*(?:assert|with)\\s*\\{[\\s\\S]*?\\})?)|(^import\\s+\\w+\\s+from[\\s\\S]*?[\'"`][^\'"`]+[\'"`](?:\\s*(?:assert|with)\\s*\\{[\\s\\S]*?\\})?)|(^import\\s+[\'"`][^\'"`]+[\'"`])|(import\\s*\\([\\s\\S]*?[\'"`][^\'"`]+[\'"`][\\s\\S]*?\\))|(require\\s*\\([\\s\\S]*?[\'"`][^\'"`]+[\'"`][\\s\\S]*?\\))|(^import\\s+source\\s+\\w+\\s+from[\\s\\S]*?[\'"`][^\'"`]+[\'"`])|(import\\.source\\s*\\([\\s\\S]*?[\'"`][^\'"`]+[\'"`][\\s\\S]*?\\))|(^export\\s*\\*\\s*from\\s*[\'"`][^\'"`]+[\'"`])|(^export\\s*\\{[\\s\\S]*?\\}\\s*from\\s*[\'"`][^\'"`]+[\'"`])';
 
 export const TYPE_ONLY_PATTERN = String.raw`import\s+type\s+`;
-
-export const REEXPORT_PATTERNS = [
-  String.raw`export\s*\*\s*from`,
-  String.raw`export\s*\{[^}]*\}\s*from`,
-];
 
 export function isRelativeImport(importPath: string): boolean {
   return importPath.startsWith('./') || importPath.startsWith('../');
@@ -54,10 +56,7 @@ export function isExternalDependency(importPath: string): boolean {
 }
 
 export function shouldSkipImport(line: string): boolean {
-  if (REEXPORT_PATTERNS.some(pattern => new RegExp(pattern).test(line))) {
-    return true;
-  }
-  
+  // Skip type-only imports
   if (new RegExp(TYPE_ONLY_PATTERN).test(line)) {
     return true;
   }
