@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { resolve } from 'path';
+import { resolve, relative } from 'path';
 import { COMBINED_PATTERN, shouldSkipImport, isExternalDependency, isRelativeImport } from './patterns';
 
 export interface RipgrepMatch {
@@ -29,9 +29,63 @@ export interface ImportResult {
   line: number;
 }
 
+// Simple glob pattern matching function
+function matchesGlobPattern(filePath: string, pattern: string): boolean {
+  // Normalize paths to use forward slashes
+  filePath = filePath.replace(/\\/g, '/');
+  pattern = pattern.replace(/\\/g, '/');
+  
+  // Convert glob pattern to regex
+  let regexPattern = '';
+  let i = 0;
+  
+  while (i < pattern.length) {
+    const char = pattern[i];
+    
+    if (char === '*') {
+      if (pattern[i + 1] === '*') {
+        // Handle **
+        regexPattern += '.*';
+        i += 2;
+        if (pattern[i] === '/') i++; // Skip trailing slash in **/
+      } else {
+        // Handle single *
+        regexPattern += '[^/]*';
+        i++;
+      }
+    } else if (char === '?') {
+      regexPattern += '.';
+      i++;
+    } else if (char === '.') {
+      regexPattern += '\\.';
+      i++;
+    } else if (char === '/') {
+      regexPattern += '/';
+      i++;
+    } else {
+      // Regular character
+      regexPattern += char;
+      i++;
+    }
+  }
+  
+  const regex = new RegExp(`^${regexPattern}$`);
+  return regex.test(filePath);
+}
+
+// Check if a file path matches any of the include patterns
+function matchesIncludePatterns(filePath: string, includePatterns: string[]): boolean {
+  if (includePatterns.length === 0) {
+    return true; // No include patterns means include all
+  }
+  
+  return includePatterns.some(pattern => matchesGlobPattern(filePath, pattern));
+}
+
 export async function* searchImports(
   directory: string,
-  excludePatterns: string[] = []
+  excludePatterns: string[] = [],
+  includePatterns: string[] = []
 ): AsyncGenerator<ImportResult> {
   const rgPath = require('@vscode/ripgrep').rgPath;
   
@@ -41,7 +95,7 @@ export async function* searchImports(
     '--no-ignore-vcs',
     '-U', // Enable multiline mode
     '--multiline-dotall',
-    '--glob', '*.{js,jsx,ts,tsx,mjs}',
+    '--glob', '**/*.{js,jsx,ts,tsx,mjs}',
     '--glob', '!node_modules/**',
     '--glob', '!dist/**',
     '--glob', '!build/**',
@@ -71,6 +125,14 @@ export async function* searchImports(
         
         if (shouldSkipImport(lineText)) continue;
         
+        const fullPath = resolve(match.data.path.text);
+        const relativePath = relative(directory, fullPath);
+        
+        // Check if this file matches the include patterns
+        if (!matchesIncludePatterns(relativePath, includePatterns)) {
+          continue;
+        }
+        
         for (const submatch of match.data.submatches) {
           let importPath = extractImportPath(lineText, submatch.start, submatch.end);
           
@@ -89,7 +151,7 @@ export async function* searchImports(
           }
           
           yield {
-            filePath: resolve(match.data.path.text),
+            filePath: fullPath,
             importPath,
             line: match.data.line_number
           };
@@ -107,6 +169,14 @@ export async function* searchImports(
         const lineText = match.data.lines.text;
         
         if (!shouldSkipImport(lineText)) {
+          const fullPath = resolve(match.data.path.text);
+          const relativePath = relative(directory, fullPath);
+          
+          // Check if this file matches the include patterns
+          if (!matchesIncludePatterns(relativePath, includePatterns)) {
+            return;
+          }
+          
           for (const submatch of match.data.submatches) {
             const importPath = extractImportPath(lineText, submatch.start, submatch.end);
             
@@ -115,7 +185,7 @@ export async function* searchImports(
                               importPath.startsWith('#') || 
                               importPath.startsWith('~'))) {  // Allow paths with / like 'fs/promises'
               yield {
-                filePath: resolve(match.data.path.text),
+                filePath: fullPath,
                 importPath,
                 line: match.data.line_number
               };

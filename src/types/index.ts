@@ -19,6 +19,7 @@ export interface CliOptions {
   output?: string;
   config?: string;
   exclude?: string[];
+  include?: string[];
   debug?: boolean;
 }
 

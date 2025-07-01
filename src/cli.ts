@@ -21,6 +21,7 @@ const defaultAction = async (files: string[], options: CliOptions) => {
       entryPoints: entryPoints.length > 0 ? entryPoints : undefined,
       tsConfigPath: options.config ? resolve(cwd, options.config) : undefined,
       excludePatterns: options.exclude || [],
+      includePatterns: options.include || [],
       debug: options.debug
     });
     
@@ -71,6 +72,7 @@ program
   .option('-o, --output <file>', 'Output file path (defaults to stdout)')
   .option('-c, --config <path>', 'Path to tsconfig.json (searches for tsconfig.json in project root if not specified)')
   .option('-e, --exclude <patterns...>', 'Glob patterns to exclude')
+  .option('-i, --include <patterns...>', 'Glob patterns to include (if not specified, all supported files are included)')
   .option('-d, --debug', 'Show debug information including generation time')
   .action(defaultAction);
 
