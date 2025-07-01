@@ -10,6 +10,7 @@ export interface GenerateOptions {
   entryPoints?: string[];
   tsConfigPath?: string;
   excludePatterns?: string[];
+  includePatterns?: string[];
   debug?: boolean;
 }
 
@@ -43,14 +44,14 @@ export function getEntryPointsForFiles(filePaths: string[], graph: DependencyGra
 }
 
 export async function generateDependencyGraph(options: GenerateOptions): Promise<DependencyGraph> {
-  const { directory, entryPoints, tsConfigPath, excludePatterns = [], debug } = options;
+  const { directory, entryPoints, tsConfigPath, excludePatterns = [], includePatterns = [], debug } = options;
   
   const resolver = new PathResolver(directory, tsConfigPath);
   const graphBuilder = new GraphBuilder(directory);
   
   const processedImports = new Set<string>();
   
-  for await (const importResult of searchImports(directory, excludePatterns)) {
+  for await (const importResult of searchImports(directory, excludePatterns, includePatterns)) {
     const resolvedImport = resolver.resolveImport(importResult.importPath, importResult.filePath);
     
     

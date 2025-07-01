@@ -33,6 +33,10 @@ export async function startMcpServer() {
           .array(z.string())
           .optional()
           .describe("Glob patterns for files/directories to exclude"),
+        includePatterns: z
+          .array(z.string())
+          .optional()
+          .describe("Glob patterns for files to include (if not specified, all supported files are included)"),
         debug: z
           .boolean()
           .optional()
@@ -78,6 +82,7 @@ export async function startMcpServer() {
       entryPoints,
       tsConfigPath,
       excludePatterns,
+      includePatterns,
       debug,
     }) => {
       // Resolve paths relative to the provided directory
@@ -95,6 +100,7 @@ export async function startMcpServer() {
         entryPoints: resolvedEntryPoints,
         tsConfigPath: resolvedTsConfigPath,
         excludePatterns: excludePatterns || [],
+        includePatterns: includePatterns || [],
         debug: debug || false,
       });
 
